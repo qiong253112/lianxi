@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin:0;
+            padding:0;
+        }
+        table{
+            text-align: center;
+            margin:auto;
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: 700px;
+        }
+        table th,td{
+            border:1px solid #ddd;
+            width:150px;
+            height:30px;
+            white-space:nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        ul{
+            list-style: none;
+        }
+        body{
+            text-align: center;
+        }
+        ul li{
+            display: inline-block;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .active{
+            color:blue;
+        }
+    </style>
+</head>
+<body>
+    <table>
+        <caption align="top">人员信息表</caption>
+        <thead>
+        <tr>
+            <th>姓名</th>
+            <th>性别</th>
+            <th>出生日期</th>
+            <th>住址</th>
+            <th>电话</th>
+            <th>IP地址</th>
+            <th>个人简介</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+<script src="jquery-1.11.3.js"></script>
+<script>
+    $(document).ready(function(){
+        $.ajax({
+            type:'POST',
+            url:'Personnel_information.json',
+            data:
+            success:function(data){
+                var message=data;
+                var html="";
+                var m=1;//定义分页变量
+                var pagetotal=Math.ceil(data.length/20);
+                var page=`
+                        <ul>
+                            <li>首页</li>
+                            <li>上一页</li>
+                            <li>1</li>
+                            <li>下一页</li>
+                            <li>末页</li>
+                            <li>共${pagetotal}页</li>
+                        </ul>
+                        `;
+                console.log(pagetotal);
+                $("body").append(page);
+                $("li:eq(2)").html(m);
+                //判断数据长度，实现不同情况下分页 html片段拼接
+                if(data.length>20){
+                    for(var i=(m-1)*20;i<20*m;i++){
+                        html+=`
+                        <tr>
+                            <td>${data[i].name}</td>
+                            <td>${data[i].gender}</td>
+                            <td>${data[i].birthday}</td>
+                            <td>${data[i].address}</td>
+                            <td>${data[i].telphone}</td>
+                            <td>${data[i].IP}</td>
+                            <td>${data[i].profile}</td>
+                         </tr>
+                       `;
+                    }
+                    $("tbody").append(html);
+                    //分页点击事件处理函数
+                    $("li:lt(5)").on("click",function(){
+                        $(this).addClass("active");
+                        $(this).siblings().removeClass("active");
+                        $("li:last").unbind();
+                        html="";
+                        if(this.innerHTML=="末页"){
+                            $("tbody").children().remove();
+                            m=pagetotal;
+                            for(var i=(m-1)*20;i<message.length;i++){
+                                html+=`
+                                        <tr>
+                                            <td>${message[i].name}</td>
+                                            <td>${message[i].gender}</td>
+                                            <td>${message[i].birthday}</td>
+                                            <td>${message[i].address}</td>
+                                            <td>${message[i].telphone}</td>
+                                            <td>${message[i].IP}</td>
+                                            <td>${message[i].profile}</td>
+                                         </tr>
+                                   `;
+                            }
+                            $("tbody").append(html);
+                            $("li:eq(2)").html(m);
+                        }else if(this.innerHTML=="首页"){
+                            $("tbody").children().remove();
+                                m=1;
+                                for(var i=0;i<20;i++){
+                                    html+=`
+                                        <tr>
+                                            <td>${message[i].name}</td>
+                                            <td>${message[i].gender}</td>
+                                            <td>${message[i].birthday}</td>
+                                            <td>${message[i].address}</td>
+                                            <td>${message[i].telphone}</td>
+                                            <td>${message[i].IP}</td>
+                                            <td>${message[i].profile}</td>
+                                         </tr>
+                                   `;
+                                }
+                            m=1;
+                            $("li:eq(2)").html(m);
+                            $("tbody").append(html);
+                        }else if(this.innerHTML=="上一页"){
+                            m-=1;
+                            $("tbody").children().remove();
+                            if(m<=1){
+                                m=1;
+                                for(var i=0;i<20;i++){
+                                    html+=`
+                                        <tr>
+                                            <td>${message[i].name}</td>
+                                            <td>${message[i].gender}</td>
+                                            <td>${message[i].birthday}</td>
+                                            <td>${message[i].address}</td>
+                                            <td>${message[i].telphone}</td>
+                                            <td>${message[i].IP}</td>
+                                            <td>${message[i].profile}</td>
+                                         </tr>
+                                   `;
+                                }
+                            }else if(m<pagetotal){
+                                for(var i=(m-1)*20;i<m*20;i++){
+                                    html+=`
+                                            <tr>
+                                                <td>${message[i].name}</td>
+                                                <td>${message[i].gender}</td>
+                                                <td>${message[i].birthday}</td>
+                                                <td>${message[i].address}</td>
+                                                <td>${message[i].telphone}</td>
+                                                <td>${message[i].IP}</td>
+                                                <td>${message[i].profile}</td>
+                                             </tr>
+                                       `;
+                                }
+                            }
+                            $("li:eq(2)").html(m);
+                            $("tbody").append(html);
+                        }else if(this.innerHTML=="下一页"){
+                            m+=1;
+                            $("tbody").children().remove();
+
+                            if(m>=pagetotal){
+                                m=pagetotal;
+                                for(var i=(m-1)*20;i<message.length;i++){
+                                    html+=`
+                                        <tr>
+                                            <td>${message[i].name}</td>
+                                            <td>${message[i].gender}</td>
+                                            <td>${message[i].birthday}</td>
+                                            <td>${message[i].address}</td>
+                                            <td>${message[i].telphone}</td>
+                                            <td>${message[i].IP}</td>
+                                            <td>${message[i].profile}</td>
+                                         </tr>`;
+                                }
+                            }else if(m>1){
+                                for(var i=(m-1)*20;i<m*20;i++){
+                                    html+=`
+                                            <tr>
+                                                <td>${message[i].name}</td>
+                                                <td>${message[i].gender}</td>
+                                                <td>${message[i].birthday}</td>
+                                                <td>${message[i].address}</td>
+                                                <td>${message[i].telphone}</td>
+                                                <td>${message[i].IP}</td>
+                                                <td>${message[i].profile}</td>
+                                             </tr>
+                                       `;
+                                }
+                            }
+                            $("li:eq(2)").html(m);
+                            $("tbody").append(html);
+                        };
+                    });
+                }else{
+                    //数据长度不足以分页的页面显示
+                    for(var i=0;i<data.length;i++){
+                        html+=`
+                    <tr>
+                        <td>${message[i].name}</td>
+                        <td>${message[i].gender}</td>
+                        <td>${message[i].birthday}</td>
+                        <td>${message[i].address}</td>
+                        <td>${message[i].telphone}</td>
+                        <td>${message[i].IP}</td>
+                        <td>${message[i].profile}</td>
+                     </tr>
+                   `
+                    }
+                    $("li:last").prevAll().remove();
+                    $("tbody").append(html);
+                }
+            },//响应成功的回调
+            error:function(XMLHttpRquest,textStatus){
+                alert(XMLHttpRquest.status);
+                alert(XMLHttpRquest.readyState);
+            },//响应失败时的回调
+        });
+    });
+</script>
+</body>
+</html>
